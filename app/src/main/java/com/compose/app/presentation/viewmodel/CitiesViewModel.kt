@@ -2,8 +2,8 @@ package com.compose.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.compose.app.domain.model.City
-import com.compose.app.domain.usecases.GetCitiesUseCase
+import com.compose.app.data.usecases.GetCitiesUseCaseImp
+import com.compose.app.data.usecases.SearchCitiesUseCaseImp
 import com.compose.app.presentation.CitiesIntent
 import com.compose.app.presentation.state.CityState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -16,15 +16,14 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CitiesViewModel @Inject constructor(private val getCitiesUseCase: GetCitiesUseCase) :
-    ViewModel() {
+class CitiesViewModel @Inject constructor(
+    private val getCitiesUseCase: GetCitiesUseCaseImp
+    ,private val searchCitiesUseCaseImp : SearchCitiesUseCaseImp)
+    : ViewModel() {
 
+    private var hasFetched = false
     private val _citiesState = MutableStateFlow<CityState>(CityState())
     val citiesState: StateFlow<CityState> get() = _citiesState.asStateFlow()
-
-    private var allOriginalCities: List<City> = emptyList()
-    private var allOriginalCitiesMap: Map<String, List<City>> = emptyMap()
-
 
     fun onEvent(intent: CitiesIntent) {
         when (intent) {
@@ -39,8 +38,6 @@ class CitiesViewModel @Inject constructor(private val getCitiesUseCase: GetCitie
         }
     }
 
-    private var hasFetched = false
-
     fun fetchCitiesOnce() {
         if (hasFetched) return
         hasFetched = true
@@ -48,22 +45,32 @@ class CitiesViewModel @Inject constructor(private val getCitiesUseCase: GetCitie
     }
 
 
+    /**
+     * Fetches and prepares the list of cities to be displayed in the UI.
+     *
+     * This function launches a coroutine on the IO dispatcher to retrieve a map of cities using [getCitiesUseCase],
+     * where each entry is grouped by the first character of the city name.
+     *
+     * - While the data is being fetched, the UI state is updated to show a loading indicator.
+     * - On successful retrieval:
+     *   - `uiCities` is updated with the grouped city map.
+     *   - `noOfCities` reflects the total number of cities.
+     * - On failure, the error message is captured and displayed in the state.
+     *
+     * The result is stored in [_citiesState], a [StateFlow] used to render the UI.
+     */
     fun fetchCities() {
         viewModelScope.launch(Dispatchers.IO) {
             _citiesState.update { it.copy(isLoading = true, error = null) }
 
             try {
-                val cityList = getCitiesUseCase() ?: emptyList()
-                val grouped = cityList.groupBy { it.name.first().uppercase() }
-
-                allOriginalCities = cityList
-                allOriginalCitiesMap = grouped
+                val cityList = getCitiesUseCase()
 
                 _citiesState.update {
                     it.copy(
                         isLoading = false,
-                        noOfCities = allOriginalCities.size,
-                        uiCities = grouped
+                        noOfCities = cityList.values.flatten().size,
+                        uiCities = cityList
                     )
                 }
             } catch (e: Exception) {
@@ -72,6 +79,21 @@ class CitiesViewModel @Inject constructor(private val getCitiesUseCase: GetCitie
         }
     }
 
+    /**
+     * Searches for cities matching the provided [query] and updates the UI state accordingly.
+     *
+     * This function:
+     * - Validates the [query] to ensure it's not blank. If blank, it calls [clearSearch] and returns.
+     * - Launches a coroutine on the Default dispatcher to perform the search in a background thread.
+     * - Calls [searchCitiesUseCaseImp] with the query, which searches within a subset of cities grouped
+     *   by the first character of the query. This approach improves performance by reducing the search scope.
+     * - Updates [_citiesState] with:
+     *   - `isLoading = true` at the start.
+     *   - On success: the filtered map of matching cities (`uiCities`) and the total count (`noOfCities`).
+     *   - On failure: handled implicitly if [searchCitiesUseCaseImp] throws (optional to handle explicitly).
+     *
+     * @param query The search term entered by the user to filter cities by name.
+     */
     private fun fetchSearchCities(query: String) {
         if (query.isBlank()) {
             clearSearch()
@@ -80,26 +102,13 @@ class CitiesViewModel @Inject constructor(private val getCitiesUseCase: GetCitie
 
         viewModelScope.launch(Dispatchers.Default) {
             _citiesState.update { it.copy(isLoading = true, error = null) }
-
-            try {
-                val key = query.firstOrNull()?.uppercase() ?: ""
-                val filtered = allOriginalCitiesMap[key]?.filter {
-                    it.name.startsWith(query, ignoreCase = true)
-                } ?: emptyList()
-
-                val grouped = if (filtered.isNotEmpty())
-                    mapOf(key to filtered)
-                else emptyMap()
-
-                _citiesState.update {
-                    it.copy(
-                        isLoading = false,
-                        noOfCities = filtered.size,
-                        uiCities = grouped
-                    )
-                }
-            } catch (e: Exception) {
-                _citiesState.update { it.copy(isLoading = false, error = e.message) }
+            val result = searchCitiesUseCaseImp(query)
+            _citiesState.update {
+                it.copy(
+                    isLoading = false,
+                    noOfCities = result.values.flatten().size,
+                    uiCities = result
+                )
             }
         }
     }
@@ -107,14 +116,6 @@ class CitiesViewModel @Inject constructor(private val getCitiesUseCase: GetCitie
 
     private fun clearSearch() {
         _citiesState.update { it.copy(query = "") }
-
-        _citiesState.update {
-            it.copy(
-                uiCities = allOriginalCitiesMap,
-                noOfCities = allOriginalCities.size,
-                isLoading = false,
-                error = null
-            )
-        }
+        fetchCities()
     }
 }

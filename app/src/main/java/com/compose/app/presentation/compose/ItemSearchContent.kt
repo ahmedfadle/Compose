@@ -13,13 +13,13 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,26 +39,27 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.compose.app.presentation.CitiesIntent
 import com.compose.app.presentation.viewmodel.CitiesViewModel
 
 
 @Composable
-fun CitySearchScreen(modifier: Modifier,viewModel: CitiesViewModel) {
+fun SearchField(
+    modifier: Modifier,
+    viewModel: CitiesViewModel = hiltViewModel()
+) {
+
     val state by viewModel.citiesState.collectAsState()
-
-
     var query by remember { mutableStateOf("") }
-    var isFocused by rememberSaveable   { mutableStateOf(false) }
+    var isFocused by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
-
     val focusManager = LocalFocusManager.current
 
     LaunchedEffect(isFocused) {
         if (isFocused) focusRequester.requestFocus()
         else focusManager.clearFocus()
     }
-
 
     Column(modifier = modifier.fillMaxWidth()) {
         Box(
@@ -143,8 +144,8 @@ private fun FocusedSearchBar(
         keyboardActions = KeyboardActions(
             onSearch = { /* Handle search */ }
         ),
-        colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = Color.White,
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.White,
             focusedIndicatorColor = Color.Transparent,
             unfocusedIndicatorColor = Color.Transparent
         )
@@ -154,7 +155,7 @@ private fun FocusedSearchBar(
 @Preview(showBackground = true)
 @Composable
 fun CitySearchScreenPreview() {
-    CitySearchScreen(Modifier, TODO())
+    SearchField(Modifier)
 }
 
 
