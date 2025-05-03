@@ -2,12 +2,14 @@ package com.compose.app.presentation.compose
 
 import android.content.Context
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -26,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -35,31 +38,56 @@ import com.compose.app.common.utilits.countryCodeToEmoji
 import com.compose.app.common.utilits.startNavigateToGoogleMaps
 import com.compose.app.domain.model.City
 import com.compose.app.domain.model.Coord
+import com.compose.app.ui.theme.LocalCornerRadius
+import com.compose.app.ui.theme.LocalSmallSpaces
+import com.fawry.fawryb2b.core.design_system.theme.LocalSizes
 
 
 @Composable
 fun CityListItem(
     modifier: Modifier = Modifier,
     city: City,
-    context:Context = LocalContext.current)
-{
+    context: Context = LocalContext.current,
+    isLastItem: Boolean = false
+) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.height(IntrinsicSize.Min)
     ) {
 
-        VerticalDivider(modifier = Modifier.padding(start = 20.dp),thickness = 3.dp, color = Color.LightGray)
+        Box(
+            modifier = Modifier
+                .width(40.dp)
+                .padding(start = 3.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            VerticalDivider(
+                modifier = Modifier,
+                thickness = 1.dp,
+                color = Color.LightGray
+            )
+
+            if (isLastItem)
+                Box(
+                    modifier = Modifier
+                        .size(14.dp)
+                        .aspectRatio(1f)
+                        .clip(CircleShape)
+                        .background(Color.LightGray)
+                )
+        }
 
         Card (
             modifier = modifier
                 .fillMaxWidth()
                 .padding(vertical = 8.dp)
-                .padding(end = 8.dp),
-            shape = RoundedCornerShape(16.dp),
+                .padding(end = 8.dp, bottom = 10.dp),
+            shape = RoundedCornerShape(LocalCornerRadius.current.extraLarge),
             elevation = CardDefaults.cardElevation(4.dp),
             onClick = {
                 context.startNavigateToGoogleMaps(city.coord.lat,city.coord.lon)
-            }
+            },
+            colors = CardDefaults.cardColors(Color.White)
         ) {
             Row(
                 modifier = Modifier.padding(8.dp),
@@ -67,12 +95,12 @@ fun CityListItem(
             ) {
                 CountryInitialCircle(city.country)
 
-                Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(LocalSmallSpaces.current.small))
 
                 Column {
                     Text(
                         text = "${city.name}, ${city.country}",
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
+                        style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Bold)
                     )
 
                     Text(
@@ -88,17 +116,15 @@ fun CityListItem(
 
 @Composable
 fun CountryInitialCircle(initials: String) {
-    Surface (
-        shape = CircleShape,
-        color = Color.LightGray,
-        modifier = Modifier.size(64.dp)
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(LocalSizes.current.substantial)
+            .aspectRatio(1f)
+            .clip(CircleShape)
+            .background(Color.LightGray)
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CountryFlagEmoji(initials)
-        }
+        CountryFlagEmoji(initials)
     }
 }
 
@@ -106,9 +132,9 @@ fun CountryInitialCircle(initials: String) {
 fun ListIndicator(initials: String) {
 
     Surface(
-        modifier = Modifier.size(44.dp),
+        modifier = Modifier.size(LocalSizes.current.large),
         shape = CircleShape,
-        border = BorderStroke(width = 2.dp, color = Color.LightGray),
+        border = BorderStroke(width = 1.dp, color = Color.LightGray),
         color = Color.White
     ) {
         Box(
@@ -133,7 +159,7 @@ fun CountryFlagEmoji(countryCode: String) {
     }
     Text(
         text = flag,
-        style = MaterialTheme.typography.headlineLarge,
+        style = MaterialTheme.typography.headlineMedium,
         color = MaterialTheme.colorScheme.onSurface
     )
 }

@@ -35,13 +35,20 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.compose.app.R
 import com.compose.app.presentation.CitiesIntent
 import com.compose.app.presentation.viewmodel.CitiesViewModel
+import com.compose.app.ui.theme.LocalCornerRadius
+import com.compose.app.ui.theme.LocalSmallSpaces
+import com.fawry.fawryb2b.core.design_system.theme.LocalSizes
 
 
 @Composable
@@ -70,7 +77,12 @@ fun SearchField(
         ) {
             FocusedSearchBar(
                 query = state.query,
-                onQueryChange = { if (it.trim().isBlank()) viewModel.onEvent(CitiesIntent.ClearQuery) else viewModel.onEvent(CitiesIntent.EnterQuery(it)) },
+                onQueryChange = {
+                    if (it.trim().isBlank())
+                        viewModel.onEvent(CitiesIntent.ClearQuery)
+                    else
+                        viewModel.onEvent(CitiesIntent.EnterQuery(it))
+                },
                 focusRequester = focusRequester,
                 onFocusChanged = { isFocused = it },
                 onClearFocus = { isFocused = false },
@@ -97,15 +109,18 @@ private fun UnfocusedSearchBar(onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(45.dp)
+            .height(LocalSizes.current.extraLarge)
             .clickable(onClick = onClick)
-            .background(Color.LightGray, RoundedCornerShape(8.dp))
-            .padding(horizontal = 16.dp),
+            .background(Color.LightGray,
+                RoundedCornerShape(LocalCornerRadius.current.extraSmall))
+            .padding(horizontal = LocalSmallSpaces.current.medium),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(Icons.Default.Search, contentDescription = null, tint = Color.Gray)
-        Spacer(Modifier.width(8.dp))
-        Text("Search...", color = Color.Gray)
+
+        Spacer(Modifier.width(LocalSmallSpaces.current.small))
+
+        Text(stringResource(R.string.search), color = Color.Gray, fontSize = 12.sp)
     }
 }
 
@@ -121,13 +136,15 @@ private fun FocusedSearchBar(
     val focusManager = LocalFocusManager.current
 
     TextField(
+        textStyle = TextStyle(fontSize = 12.sp),
         value = query,
         onValueChange = onQueryChange,
         modifier = Modifier
             .fillMaxWidth()
+            .height(LocalSizes.current.extraLarge)
             .focusRequester(focusRequester)
             .onFocusChanged { onFocusChanged(it.isFocused) },
-        placeholder = { Text("Search") },
+        placeholder = { Text(stringResource(R.string.search), fontSize = 12.sp) },
         leadingIcon = { Icon(Icons.Default.Search, null, tint = Color.Black) },
         trailingIcon = {
             Icon(imageVector = Icons.Default.Clear,contentDescription= null, modifier = Modifier.clickable {
@@ -156,6 +173,12 @@ private fun FocusedSearchBar(
 @Composable
 fun CitySearchScreenPreview() {
     SearchField(Modifier)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun UnfocusedSearchBarPreview() {
+    UnfocusedSearchBar({  })
 }
 
 

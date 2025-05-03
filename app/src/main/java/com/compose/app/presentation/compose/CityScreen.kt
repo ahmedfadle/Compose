@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
@@ -32,6 +33,8 @@ import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.compose.app.R
 import com.compose.app.presentation.viewmodel.CitiesViewModel
+import com.compose.app.ui.theme.LocalSmallSpaces
+import com.fawry.fawryb2b.core.design_system.theme.LocalSizes
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,8 +61,8 @@ fun CityScreen(
                 title = {
                     Text(
                         modifier = Modifier
-                            .height(40.dp)
-                            .padding(top = 10.dp),
+                            .height(LocalSizes.current.large)
+                            .padding(top = LocalSmallSpaces.current.small),
                         text = stringResource(R.string.city_search),
                         fontSize = 30.sp,
                         fontWeight = FontWeight.Bold
@@ -69,10 +72,7 @@ fun CityScreen(
             )
         },
         bottomBar = {
-                SearchField(
-                    Modifier,
-                    viewModel
-                )
+                SearchField(Modifier, viewModel)
 
         },
         modifier = Modifier
@@ -82,13 +82,13 @@ fun CityScreen(
 
         Column(
             modifier = Modifier.fillMaxSize()
-                .padding(innerPadding).padding(start = 8.dp , end = 8.dp),
+                .padding(innerPadding).padding(start = LocalSmallSpaces.current.small , end = LocalSmallSpaces.current.small),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Text(
                 modifier = Modifier
-                    .padding(top = 20.dp, bottom = 20.dp)
+                    .padding(LocalSmallSpaces.current.extraMedium, bottom = LocalSmallSpaces.current.extraMedium)
                     .align(Alignment.CenterHorizontally),
                 textAlign = TextAlign.Center,
                 text = stringResource(R.string.cities, state.value.noOfCities ),
@@ -106,7 +106,7 @@ fun CityScreen(
                 state.value.uiCities.isEmpty() ->
                     Text(
                         modifier = Modifier
-                            .padding(top = 20.dp, bottom = 20.dp)
+                            .padding(LocalSmallSpaces.current.extraMedium, bottom = LocalSmallSpaces.current.extraMedium)
                             .align(Alignment.CenterHorizontally),
                         textAlign = TextAlign.Center,
                         text = stringResource(R.string.no_data_found),
@@ -117,7 +117,7 @@ fun CityScreen(
                 state.value.error != null ->
                     Text(
                         modifier = Modifier
-                            .padding(top = 20.dp, bottom = 20.dp)
+                            .padding(top = LocalSmallSpaces.current.extraMedium, bottom = LocalSmallSpaces.current.extraMedium)
                             .align(Alignment.CenterHorizontally),
                         text = "Error: ${state.value.error}"
                     )
@@ -128,8 +128,10 @@ fun CityScreen(
                             item {
                                 ListIndicator(key.uppercase())
                             }
-                            items(cities.toMutableList()) { city ->
-                                CityListItem(modifier = Modifier.padding(start = 20.dp), city)
+                            itemsIndexed(cities.toMutableList()) {index , city ->
+                                CityListItem(modifier = Modifier.padding(start = LocalSmallSpaces.current.extraMedium),
+                                    city = city, isLastItem = index == state.value.noOfCities -1
+                                )
                             }
 
                         }
