@@ -84,8 +84,8 @@ dependencies {
     implementation (libs.hilt.android.v248)
     ksp( libs.dagger.compiler) // Dagger compiler
     ksp (libs.hilt.compiler.v248) // Hilt compiler
-    implementation("androidx.compose.material:material:1.8.0-rc03")
-    implementation ("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation(libs.androidx.material)
+    implementation (libs.androidx.hilt.navigation.compose)
 
 
 

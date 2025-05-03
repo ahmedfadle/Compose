@@ -1,7 +1,6 @@
 package com.compose.app.presentation.compose
 
 import android.content.Context
-import android.content.Intent
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

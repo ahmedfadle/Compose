@@ -4,6 +4,7 @@ converterGson = "2.11.0"
 converterSimplexml = "2.9.0"
 hiltAndroid = "2.48"
 hiltCompiler = "2.48"
+hiltNavigationCompose = "1.1.0"
 jsoup = "1.14.3"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
@@ -15,6 +16,7 @@ activityCompose = "1.10.1"
 composeBom = "2024.09.00"
 
 #network versions
+material = "1.8.0-rc03"
 retrofit = "2.9.0"
 moshi = "1.15.0"
 okhttp = "4.12.0"
@@ -37,6 +39,8 @@ ksp = "2.0.21-1.0.27"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+androidx-material = { module = "androidx.compose.material:material", version.ref = "material" }
 converter-gson = { module = "com.squareup.retrofit2:converter-gson", version.ref = "converterGson" }
 converter-simplexml = { module = "com.squareup.retrofit2:converter-simplexml", version.ref = "converterSimplexml" }
 dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "hiltAndroid" }
