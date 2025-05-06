@@ -32,6 +32,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.compose.app.R
+import com.compose.app.presentation.CitiesIntent
 import com.compose.app.presentation.viewmodel.CitiesViewModel
 import com.compose.app.ui.theme.LocalSmallSpaces
 import com.fawry.fawryb2b.core.design_system.theme.LocalSizes
@@ -72,7 +73,19 @@ fun CityScreen(
             )
         },
         bottomBar = {
-                SearchField(Modifier, viewModel)
+                SearchField(
+                    modifier = Modifier,
+                    _query = state.value.query,
+                    onQueryChange = {
+                        if (it.trim().isBlank())
+                            viewModel.onEvent(CitiesIntent.ClearQuery)
+                        else
+                            viewModel.onEvent(CitiesIntent.EnterQuery(it))
+                    },
+                    onClear = {
+                        viewModel.onEvent(CitiesIntent.ClearQuery)
+                    }
+                )
 
         },
         modifier = Modifier
@@ -81,14 +94,22 @@ fun CityScreen(
 
 
         Column(
-            modifier = Modifier.fillMaxSize()
-                .padding(innerPadding).padding(start = LocalSmallSpaces.current.small , end = LocalSmallSpaces.current.small),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .padding(
+                    start = LocalSmallSpaces.current.small,
+                    end = LocalSmallSpaces.current.small
+                ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
             Text(
                 modifier = Modifier
-                    .padding(LocalSmallSpaces.current.extraMedium, bottom = LocalSmallSpaces.current.extraMedium)
+                    .padding(
+                        LocalSmallSpaces.current.extraMedium,
+                        bottom = LocalSmallSpaces.current.extraMedium
+                    )
                     .align(Alignment.CenterHorizontally),
                 textAlign = TextAlign.Center,
                 text = stringResource(R.string.cities, state.value.noOfCities ),
@@ -106,7 +127,10 @@ fun CityScreen(
                 state.value.uiCities.isEmpty() ->
                     Text(
                         modifier = Modifier
-                            .padding(LocalSmallSpaces.current.extraMedium, bottom = LocalSmallSpaces.current.extraMedium)
+                            .padding(
+                                LocalSmallSpaces.current.extraMedium,
+                                bottom = LocalSmallSpaces.current.extraMedium
+                            )
                             .align(Alignment.CenterHorizontally),
                         textAlign = TextAlign.Center,
                         text = stringResource(R.string.no_data_found),
@@ -117,7 +141,10 @@ fun CityScreen(
                 state.value.error != null ->
                     Text(
                         modifier = Modifier
-                            .padding(top = LocalSmallSpaces.current.extraMedium, bottom = LocalSmallSpaces.current.extraMedium)
+                            .padding(
+                                top = LocalSmallSpaces.current.extraMedium,
+                                bottom = LocalSmallSpaces.current.extraMedium
+                            )
                             .align(Alignment.CenterHorizontally),
                         text = "Error: ${state.value.error}"
                     )

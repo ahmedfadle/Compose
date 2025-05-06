@@ -22,7 +22,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,10 +41,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.compose.app.R
-import com.compose.app.presentation.CitiesIntent
-import com.compose.app.presentation.viewmodel.CitiesViewModel
 import com.compose.app.ui.theme.LocalCornerRadius
 import com.compose.app.ui.theme.LocalSmallSpaces
 import com.fawry.fawryb2b.core.design_system.theme.LocalSizes
@@ -54,10 +50,12 @@ import com.fawry.fawryb2b.core.design_system.theme.LocalSizes
 @Composable
 fun SearchField(
     modifier: Modifier,
-    viewModel: CitiesViewModel = hiltViewModel()
+    _query: String,
+    onQueryChange: (String) -> Unit,
+    onClear: () -> Unit
 ) {
 
-    val state by viewModel.citiesState.collectAsState()
+
     var query by remember { mutableStateOf("") }
     var isFocused by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
@@ -76,24 +74,21 @@ fun SearchField(
                 .fillMaxWidth()
         ) {
             FocusedSearchBar(
-                query = state.query,
+                query = _query,
                 onQueryChange = {
-                    if (it.trim().isBlank())
-                        viewModel.onEvent(CitiesIntent.ClearQuery)
-                    else
-                        viewModel.onEvent(CitiesIntent.EnterQuery(it))
+                   onQueryChange.invoke(it)
                 },
                 focusRequester = focusRequester,
                 onFocusChanged = { isFocused = it },
                 onClearFocus = { isFocused = false },
                 onClear = {
-                    viewModel.onEvent(CitiesIntent.ClearQuery)
+                    onClear.invoke()
                     query = ""
                     isFocused = false
                 }
             )
 
-            if (!isFocused && state.query.isEmpty()) {
+            if (!isFocused && query.isEmpty()) {
                 UnfocusedSearchBar {
                     isFocused = true
                     focusRequester.requestFocus()
@@ -111,8 +106,10 @@ private fun UnfocusedSearchBar(onClick: () -> Unit) {
             .fillMaxWidth()
             .height(LocalSizes.current.extraLarge)
             .clickable(onClick = onClick)
-            .background(Color.LightGray,
-                RoundedCornerShape(LocalCornerRadius.current.extraSmall))
+            .background(
+                Color.LightGray,
+                RoundedCornerShape(LocalCornerRadius.current.extraSmall)
+            )
             .padding(horizontal = LocalSmallSpaces.current.medium),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -172,7 +169,12 @@ private fun FocusedSearchBar(
 @Preview(showBackground = true)
 @Composable
 fun CitySearchScreenPreview() {
-    SearchField(Modifier)
+    SearchField(
+        modifier = Modifier,
+        _query ="query",
+        onQueryChange = {  },
+        onClear = {}
+    )
 }
 
 @Preview(showBackground = true)
