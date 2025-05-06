@@ -1,5 +1,6 @@
 package com.compose.app.presentation.compose
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -88,12 +89,13 @@ fun SearchField(
                 }
             )
 
-            if (!isFocused && query.isEmpty()) {
+            androidx.compose.animation.AnimatedVisibility(!isFocused && query.isEmpty()) {
                 UnfocusedSearchBar {
                     isFocused = true
                     focusRequester.requestFocus()
                 }
             }
+
         }
 
     }
